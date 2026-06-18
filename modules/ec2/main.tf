@@ -1,45 +1,23 @@
-resource "aws_vpc" "this" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  tags = {
-    Name = "${var.environment}-vpc"
-  }
+data "aws_ssm_parameter" "amazon_linux_2023" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
 }
 
-resource "aws_subnet" "public" {
-  vpc_id                  = aws_vpc.this.id
-  cidr_block              = var.subnet_cidr
-  map_public_ip_on_launch = true
+resource "aws_instance" "this" {
+  ami                         = data.aws_ssm_parameter.amazon_linux_2023.value
+  instance_type               = var.instance_type
+  subnet_id                   = var.subnet_id
+  vpc_security_group_ids      = [var.security_group_id]
+  associate_public_ip_address = true
+
+  user_data = <<-EOF
+              #!/bin/bash
+              dnf update -y
+              dnf install nginx -y
+              systemctl enable nginx
+              systemctl start nginx
+              EOF
 
   tags = {
-    Name = "${var.environment}-public-subnet"
+    Name = "${var.environment}-nginx-ec2"
   }
-}
-
-resource "aws_internet_gateway" "this" {
-  vpc_id = aws_vpc.this.id
-
-  tags = {
-    Name = "${var.environment}-igw"
-  }
-}
-
-resource "aws_route_table" "public" {
-  vpc_id = aws_vpc.this.id
-
-  route {
-    cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.this.id
-  }
-
-  tags = {
-    Name = "${var.environment}-public-rt"
-  }
-}
-
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
-  route_table_id = aws_route_table.public.id
 }

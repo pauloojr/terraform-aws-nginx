@@ -17,3 +17,8 @@ variable "subnet_cidr" {
 variable "allowed_ssh_cidr" {
   type = string
 }
+
+variable "instance_type" {
+  type    = string
+  default = "t3.micro"
+}
