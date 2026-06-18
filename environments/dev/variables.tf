@@ -13,3 +13,7 @@ variable "vpc_cidr" {
 variable "subnet_cidr" {
   type = string
 }
+
+variable "allowed_ssh_cidr" {
+  type = string
+}
