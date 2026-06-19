@@ -1,6 +1,14 @@
 terraform {
   required_version = ">= 1.5"
 
+backend "s3" {
+  bucket         = "pauloojr-terraform-state-dev"
+  key            = "terraform-aws-nginx/dev/terraform.tfstate"
+  region         = "us-east-1"
+  dynamodb_table = "terraform-locks"
+  encrypt        = true
+}
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -37,3 +45,4 @@ module "ec2" {
   security_group_id = module.security_group.security_group_id
   instance_type     = var.instance_type
 }
+
