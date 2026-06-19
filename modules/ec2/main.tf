@@ -9,12 +9,27 @@ resource "aws_instance" "this" {
   vpc_security_group_ids      = [var.security_group_id]
   associate_public_ip_address = true
 
-  user_data = <<-EOF
+    user_data = <<-EOF
               #!/bin/bash
               dnf update -y
               dnf install nginx -y
+
+              cat > /usr/share/nginx/html/index.html <<HTML
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <title>Terraform AWS Nginx</title>
+              </head>
+              <body>
+                <h1>Terraform AWS Nginx</h1>
+                <p>Infrastructure provisioned with Terraform.</p>
+                <p>Environment: ${var.environment}</p>
+              </body>
+              </html>
+              HTML
+
               systemctl enable nginx
-              systemctl start nginx
+              systemctl restart nginx
               EOF
 
   tags = {
